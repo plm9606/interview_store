@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { get } = require("http");
 const filePath = process.argv[3];
 const TITLE = "**💌CONTENTS**";
 
@@ -16,18 +17,17 @@ if (text[0].startsWith(TITLE)) {
 
 const contentList = [TITLE, "\r"];
 for (row of text) {
-  if (row.startsWith("###")) {
-    row = row.slice(3);
-    const title = row.replace(/\#/g, "").trim();
-    const link = title.toLowerCase().replace(/\(|\)/g, "").replace(/ /g, "-");
-    contentList.push(`  - [${title}](#${link})`);
-  } else if (row.startsWith("##")) {
-    row = row.slice(2);
-    const title = row.replace(/\#/g, "").trim();
-    const link = title.toLowerCase().replace(/\(|\)/g, "").replace(/ /g, "-");
-    contentList.push(`- [${title}](#${link})`);
+  if (!row.startsWith("#")) continue;
+
+  if (row.startsWith("### ")) {
+    contentList.push(`    ${getContentLink(3)}`);
+  } else if (row.startsWith("## ")) {
+    contentList.push(`  ${getContentLink(2)}`);
+  } else if (row.startsWith("# ")) {
+    contentList.push(`${getContentLink(1)}`);
   }
 }
+
 contentList.push("\r");
 console.log(contentList);
 
@@ -38,3 +38,10 @@ stream.on("error", (err) => {
 contentList.concat(text).forEach((line) => {
   stream.write(line + "\n");
 });
+
+function getContentLink(sliceCnt) {
+  row = row.slice(sliceCnt);
+  const title = row.replace(/\#/g, "").trim();
+  const link = title.toLowerCase().replace(/\(|\)/g, "").replace(/ /g, "-");
+  return `- [${title}](#${link})`;
+}
