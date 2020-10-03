@@ -1,4 +1,8 @@
-## 이진 탐색 트리(Binary Search Tree)
+**contents**
+  - [Red-Black Tree](#red-black-tree)
+  - [특징](#특징)
+  - [조건](#조건)
+  - [Double Red 해결 전략](#double-red-해결-전략)
 
 모든 노드가 자신의 왼쪽 서브트리에는 현재노드보다 작은 키값이, 오른쪽 서브트리에는 현재 노드보다 큰 값이 오는 규칙을 만족하는 이진트리이다.
 
@@ -79,3 +83,5 @@
 - Red Black Tree는 AVL Tree보다 색깔을 저장하기 위해 더 많은 Space Complexity가 필요
 - Red Black Tree는 대부분의 언어의 map, multimap, multiset에서 사용
 - AVL tree는 조회에 속도가 중요한 Database에서 사용
+
+

@@ -1,9 +1,14 @@
-# 자료구조
+**contents**
 
-**Contents**
-
-- [배열](#Array배열)
-- [리스트](#List)
+- [장점](#장점)
+- [단점](#단점)
+- [장점](#장점)
+- [단점](#단점)
+- [ArrayList](#arraylist)
+  - [배열과 ArrayList의 차이](#배열과-arraylist의-차이)
+- [LinkedList](#linkedlist)
+- [Vector](#vector)
+- [노드 삽입 과정 비교](#노드-삽입-과정-비교)
 
 # Array(배열)
 
