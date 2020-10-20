@@ -1,17 +1,78 @@
+**💌CONTENTS**
+
+- [네트워크](#네트워크)
+  - [OSI 7 Layer](#osi-7-layer)
+  - [TCP/IP](#tcp/ip)
+  - [IP(Internet Protocol)](#ipinternet-protocol)
+  - [TCP](#tcp)
+    - [3-way-handshaking](#3-way-handshaking)
+  - [UDP](#udp)
+  - [HTTP](#http)
+    - [상태를 계속 유지하지 않는 STATELESS 프로토콜이다](#상태를-계속-유지하지-않는-stateless-프로토콜이다)
+    - [지속 연결(persistent connection)로 접속량 절약](#지속-연결persistent-connection로-접속량-절약)
+    - [Cookie를 사용한 상태 관리](#cookie를-사용한-상태-관리)
+    - [HTTP 메세지 인코딩](#http-메세지-인코딩)
+    - [Multipart](#multipart)
+  - [웹 서버](#웹-서버)
+    - [Proxy](#proxy)
+    - [Gateway](#gateway)
+    - [터널](#터널)
+  - [HTTP + S(Secure)](#http-+-ssecure)
+  - [SSL](#ssl)
+    - [인증서에는 어떤 내용이 있나](#인증서에는-어떤-내용이-있나)
+    - [서버가 모든 요청에 대해서 자신의 공개키를 준다면](#서버가-모든-요청에-대해서-자신의-공개키를-준다면)
+    - [인증서 안에 있는 공개키를 받긴 받았는데](#인증서-안에-있는-공개키를-받긴-받았는데)
+  - [랜덤 데이터(nonce)를 모두 알고 있다면](#랜덤-데이터nonce를-모두-알고-있다면)
+  - [왜 굳이 premaster secret이 필요할까](#왜-굳이-premaster-secret이-필요할까)
+
 # 네트워크
 
-- [TCP/IP](#TCP/IP)
-- [IP(Internet Protocol)](#IPInternet-Protocol)
-- [TCP](#TCP)
-  - [3-way-handshaking](#3-way-handshaking)
-- [HTTP](#HTTP)
-  - [STATELESS](#상태를-계속-유지하지-않는-STATELESS-프로토콜이다)
-  - [지속 연결](#지속-연결persistent-connection로-접속량-절약)
-  - [Cookie](#Cookie를-사용한-상태-관리)
-  - [HTTP 메세지 인코딩](#HTTP-메세지-인코딩)
-  - [Multipart](Multipart)
-  - [웹 서버](#웹-서버)
-- [HTTPS](##http--ssecure)
+## OSI 7 Layer
+
+1. 물리계층
+2. 데이터링크 계층 (프레임)
+   - 노드간 오류 없는 데이터 전송을 보장하기 위한 계층
+   - 오류 제어
+     - 오류 검출
+       - CRC(Cyclic Redundancy Checks)
+       - Parity 비트 검출법
+       - Checksums 검출법
+     - 오류 복구(오류정정)
+       - 전방향오류정정
+         - Hamming 코드 기법
+         - binary convolutional condes
+         - Reed-Solomon codes
+       - 역방향오류정정
+         - NAK (재전송 요청 후 다시 수신해서 정정)
+         - Timeout: 응답 못받으면 다시 전송해 정정
+   - 흐름 제어(Flow Control)
+     - Stop&Wait Flow Control
+     - Sliding Window Flow Control
+   - 프레임 관리
+   - 물리주소 지정
+   - 접근 제어
+   - 링크제어/관리
+3. 네트워크 계층 (패킷)
+   - 여러개의 노드를 거칠때마다 경로를 찾아주는 역할을 하는 계층
+   - 논리적인 주소 구조(IP), 곧 네트워크 관리자가 직접 주소를 할당하는 구조를 가지며, 계층적(hierarchical)이다.
+   - 라우팅 : 라우팅 테이블의 경로 정보를 기반으로 다른 네트워크로 최적의 경로를 통해 데이터를 전송한다.
+   - 흐름제어
+   - 세그멘테이션
+   - 오류제어
+   - 안티 네트워킹
+4. 전송 계층 (세그먼트)
+   - 포트를 열고 end to end간 신뢰성 있는 통신 구현
+   - ex. `TCP`, `UDP`
+   - `시퀀스 넘버`, `acknowledge number` 기반의 오류제어 방식 사용
+5. 세션 계층
+   - 양 끝단의 응용 프로세스가 통신을 관리하기 위한 방법을 제공한다.
+   - 동시 송수신 방식(duplex), 반이중 방식(half-duplex), 전이중 방식(Full Duplex)의 통신과 함께, 체크 포인팅과 유휴, 종료, 다시 시작 과정 등을 수행한다.
+   - 이 계층은 TCP/IP 세션을 만들고 없애는 책임을 진다.
+6. 표현 계층
+   - 문자 코드 압축, 암호화 등 데이터 변환
+7. 응용 계층
+   - 응용 프로세스와 직접 관계하여 일반적인 응용 서비스 수행
+   - `http`, `FTP`, `DNS`
 
 ## TCP/IP
 
@@ -33,12 +94,30 @@ IP통신은 수신지의 IP주소를 바탕으로 ARP()를 사용해 다음으�
 
 ## TCP
 
+- TCP와 IP를 함께 사용하는데, IP가 데이터의 배달을 처리한다면 TCP는 **패킷을 추적 및 관리**한다.
+- 연결형 서비스로 `가상 회선 방식`을 제공한다
+- 전이중(Full-Duplex), 점대점(Point to Point) 방식이다.
+  - 전이중 :전송이 양방향으로 동시에 일어날 수 있다.
+  - 점대점: 각 연결이 정확히 2개의 종단점을 가지고 있다.
+- 멀티캐스팅이나 브로드캐스팅을 지원하지 않는다.
+- 연속성보다 신뢰성있는 전송이 중요할 때에 사용된다.
+
 ### 3-way-handshaking
 
 클라이언트(어플리케이션)가 Socket Library에게 소캣 생성을 요청한다. 소켓 라이브러리는 소켓을 생성하고 소켓을 구별할 수 있는 `디스크립터`를 어플리케이션에게 반환한다.
 
 `connect(<디스크립터>, 서버ip, 서버 port)`를 실행하면 소켓간 연결을 시도한다.
 서버의 소켓과 제어정보(TCP헤더)를 주고 받아 서로의 소켓에 필요한 정보들을 저장해 송수신이 가능한 상태로 만든다.
+
+## UDP
+
+- 데이터를 `데이터그램` 단위로 처리하는 프로토콜이다.
+- 비연결형 서비스로 데이터그램 방식을 제공한다.
+- 연결을 위해 할당되는 논리적인 경로가 없다.
+- 그렇기 때문에 각각의 패킷은 다른 경로로 전송되고, 각각의 패킷은 독립적인 관계를 지니게 된다.
+- 이렇게 데이터를 서로 다른 경로로 독립적으로 처리한다.
+- 정보를 주고 받을 때 정보를 보내거나 받는다는 신호절차를 거치지 않는다.
+- UDP헤더의 CheckSum 필드를 통해 최소한의 오류만 검출한다.
 
 ## HTTP
 
@@ -199,4 +278,11 @@ SSL 인증서는 신뢰할 수 있는 서버임을 알려주는 동시에 SSL �
 
 서버에서 클라이언트로 보내는 nonce 값을 복호화하는 것은 서버의 인증서를 받으면 모두가 할 수 있다. 암호화되지 않은 통신이라는 뜻인데, 이럴때 공통의 비밀 키를 공유할 수 있도록 하는 것이 Diffie–Hellman 키 교환이다. 자세한 것은 알 수 없지만 master secret을 만들기 위해서는 nonce가 두 개 필요하기 때문일 것이다.
 
-> **_참고_** > [https://opentutorials.org/course/228/4894](https://opentutorials.org/course/228/4894) > [https://wayhome25.github.io/cs/2018/03/11/ssl-https/](https://wayhome25.github.io/cs/2018/03/11/ssl-https/) > [https://ko.wikipedia.org/wiki/디피-헬먼*키*교환](https://ko.wikipedia.org/wiki/%EB%94%94%ED%94%BC-%ED%97%AC%EB%A8%BC_%ED%82%A4_%EA%B5%90%ED%99%98) > [https://security.stackexchange.com/questions/89383/why-does-the-ssl-tls-handshake-have-a-client-and-server-random](https://security.stackexchange.com/questions/89383/why-does-the-ssl-tls-handshake-have-a-client-and-server-random)
+---
+
+**_참고_**
+
+- [https://opentutorials.org/course/228/4894](https://opentutorials.org/course/228/4894)
+- [https://wayhome25.github.io/cs/2018/03/11/ssl-https/](https://wayhome25.github.io/cs/2018/03/11/ssl-https/)
+- [https://ko.wikipedia.org/wiki/디피-헬먼*키*교환](https://ko.wikipedia.org/wiki/%EB%94%94%ED%94%BC-%ED%97%AC%EB%A8%BC_%ED%82%A4_%EA%B5%90%ED%99%98)
+- [https://security.stackexchange.com/questions/89383/why-does-the-ssl-tls-handshake-have-a-client-and-server-random](https://security.stackexchange.com/questions/89383/why-does-the-ssl-tls-handshake-have-a-client-and-server-random)
