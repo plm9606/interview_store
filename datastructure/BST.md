@@ -20,9 +20,9 @@
 규칙 3. 루트 노드의 키가 오른쪽 서브 트리를 구성하는 어떠한 노드의 키보다 작다.
 규칙 4. 왼쪽과 오른쪽 서브트리도 이진 탐색 트리이다.
 
-- 이진 탐색 트리의 탐색 연산은 **평균 O(log n)**의 시간 복잡도를 갖는다.
+- 이진 탐색 트리의 탐색 연산은 **평균 O(log n)** 의 시간 복잡도를 갖는다.
 - 비교적 삽입, 삭제가 효율적인 자료구조이다.
-- 이진 탐색 트리는 **Skewed Tree(편향 트리)**가 될 수 있다.
+- 이진 탐색 트리는 **Skewed Tree(편향 트리)** 가 될 수 있다.
   - 저장 순서에 따라 계속 한 쪽으로만 노드가 추가되는 경우가 발생하기 때문.(**O(n)**)
   - 이를 해결하기 위해 **균형잡힌 이진검색트리**를 고안. 대표적인 것은 **레드블랙트리**와 **AVL트리**다.
 - 이진 탐색 트리는 이진 탐색을 쉽게 할 수 있도록 만들어진 트리이다.
@@ -49,7 +49,12 @@
 
    삭제 노드의 자식 노드와 삭제노드의 부모 노드를 연결해준다.
 
+   ![](https://github.com/namjunemy/TIL/blob/master/Algorithm/img/bst_11.png?raw=true)
+
 3. 두개의 서브트리를 갖고 있는 경우
+
+   ![](https://github.com/namjunemy/TIL/blob/master/Algorithm/img/bst_12.png?raw=true)
+   ![](https://github.com/namjunemy/TIL/blob/master/Algorithm/img/bst_13.png?raw=true)
 
    - 오른쪽 자식 중 가장 작은 값을 삭제 노드 자리로 옮긴다.
    - 왼쪽 자식 중 가장 큰 값을 삭제 노드 자리로 옮긴다.
@@ -144,4 +149,8 @@
 - Red Black Tree는 대부분의 언어의 map, multimap, multiset에서 사용
 - AVL tree는 조회에 속도가 중요한 Database에서 사용
 
+---
 
+참고
+
+- https://ict-nroo.tistory.com/63
