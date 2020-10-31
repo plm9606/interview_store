@@ -129,4 +129,59 @@ process.nextTick()이 비동기 api임에도 다이어그램에 포함되어있�
 
 ### 왜 이런것이 생겨난걸까
 
+이 nextTick은 딱봐도 잘못 사용했다가는 이벤트 큐 운용에 큰 문제를 줄것 같다. 그런데 왜 이런 기능을 추가하게 되었을까?
+API는 필요하지 않은 경우에도 항상 비동기로 작동해야 한다는 철학 때문이다.
+
+```js
+function apiCall(arg, callback) {
+  if (typeof arg !== "string")
+    return process.nextTick(
+      callback,
+      new TypeError("argument should be string")
+    );
+}
+```
+
+위의 코드는 arg가 string인지 체크하고, string이 아닐 경우 에러를 전달한다.
+만약에 nextTick이 아니였다면 이 에러는 다른 함수 실행 후에 실행되어 에러가 난 즉시 실행되지 못할 수 있다.
+이때 process.nextTick()을 사용해서 apiCall이 나머지 코드가 실행되기 전에, 이벤트 루프가 진행되기 전에 해당 콜백을 실행시킬 수 있도록 하는 것이다.
+
+하지만 아까 말했듯, 이 철학은 잠재적으로 문제가 될 수 있는 상황을 만들 수 있다.
+
+```js
+let bar;
+
+// this has an asynchronous signature, but calls callback synchronously
+function someAsyncApiCall(callback) {
+  callback();
+}
+
+// the callback is called before `someAsyncApiCall` completes.
+someAsyncApiCall(() => {
+  // since someAsyncApiCall hasn't completed, bar hasn't been assigned any value
+  console.log("bar", bar); // undefined
+});
+
+bar = 1;
+```
+
+someAsyncApiCall()을 비동기적으로 선언했지만, 실제로는 동기적으로 실행되어 console.log의 bar가 undefined로 나온다. 이 함수가 호출되면, someAsyncApiCall()에 주어진 콜백은 이벤트루프의 같은 phase에서 호출이 되기 때문이다.
+
+콜백을 nextTick에 넣게되면 콜백이 호출되기 전에 모든 변수, 함수 등이 초기화 될 수 있다. 이벤트 루프가 계속 진행되기 전에 사용자에게 오류를 받아야 하는 경우에 유용하게 사용할 수 있다.
+
+```js
+let bar;
+
+function someAsyncApiCall(callback) {
+  process.nextTick(callback);
+}
+
+someAsyncApiCall(() => {
+  console.log("bar", bar); // 1이 출력된다.
+});
+
+bar = 1;
+```
+
+https://blog.outsider.ne.kr/739
 https://javaexpert.tistory.com/1001
